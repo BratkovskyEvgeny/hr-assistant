@@ -499,25 +499,34 @@ def extract_responsibilities(text):
     sentences = sent_tokenize(text.lower())
     model = get_model()
 
-    for sentence in sentences:
-        # Проверяем, содержит ли предложение ключевые слова обязанностей
-        if any(keyword in sentence for keyword in RESPONSIBILITY_KEYWORDS):
-            # Получаем эмбеддинг предложения
-            sentence_embedding = model.encode(sentence)
+    if model is None:
+        print("Ошибка: модель не была загружена")
+        return responsibilities
 
-            # Проверяем, не является ли это дубликатом
-            is_duplicate = False
-            for existing_resp in responsibilities:
-                existing_embedding = model.encode(existing_resp)
-                similarity = cosine_similarity(
-                    sentence_embedding.reshape(1, -1), existing_embedding.reshape(1, -1)
-                )[0][0]
-                if similarity > 0.8:  # Порог схожести
-                    is_duplicate = True
-                    break
+    try:
+        for sentence in sentences:
+            # Проверяем, содержит ли предложение ключевые слова обязанностей
+            if any(keyword in sentence for keyword in RESPONSIBILITY_KEYWORDS):
+                # Получаем эмбеддинг предложения
+                sentence_embedding = model.encode(sentence)
 
-            if not is_duplicate:
-                responsibilities.append(sentence)
+                # Проверяем, не является ли это дубликатом
+                is_duplicate = False
+                for existing_resp in responsibilities:
+                    existing_embedding = model.encode(existing_resp)
+                    similarity = cosine_similarity(
+                        sentence_embedding.reshape(1, -1),
+                        existing_embedding.reshape(1, -1),
+                    )[0][0]
+                    if similarity > 0.8:  # Порог схожести
+                        is_duplicate = True
+                        break
+
+                if not is_duplicate:
+                    responsibilities.append(sentence)
+    except Exception as e:
+        print(f"Ошибка при извлечении обязанностей: {str(e)}")
+        return responsibilities
 
     return responsibilities
 
@@ -538,18 +547,34 @@ def analyze_skills(job_description, resume_text):
     # Анализируем отсутствующий опыт
     missing_experience = []
     model = get_model()
-    for job_resp in job_responsibilities:
-        job_resp_embedding = model.encode(job_resp)
-        max_similarity = 0
-        for resume_resp in resume_responsibilities:
-            resume_resp_embedding = model.encode(resume_resp)
-            similarity = cosine_similarity(
-                job_resp_embedding.reshape(1, -1), resume_resp_embedding.reshape(1, -1)
-            )[0][0]
-            max_similarity = max(max_similarity, similarity)
 
-        if max_similarity < 0.5:  # Порог схожести
-            missing_experience.append(job_resp)
+    if model is None:
+        print("Ошибка: модель не была загружена")
+        return {
+            "missing_skills": missing_skills,
+            "missing_experience": missing_experience,
+        }
+
+    try:
+        for job_resp in job_responsibilities:
+            job_resp_embedding = model.encode(job_resp)
+            max_similarity = 0
+            for resume_resp in resume_responsibilities:
+                resume_resp_embedding = model.encode(resume_resp)
+                similarity = cosine_similarity(
+                    job_resp_embedding.reshape(1, -1),
+                    resume_resp_embedding.reshape(1, -1),
+                )[0][0]
+                max_similarity = max(max_similarity, similarity)
+
+            if max_similarity < 0.5:  # Порог схожести
+                missing_experience.append(job_resp)
+    except Exception as e:
+        print(f"Ошибка при анализе опыта: {str(e)}")
+        return {
+            "missing_skills": missing_skills,
+            "missing_experience": missing_experience,
+        }
 
     return {"missing_skills": missing_skills, "missing_experience": missing_experience}
 
