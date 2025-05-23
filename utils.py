@@ -581,11 +581,17 @@ def analyze_skills(job_description, resume_text):
 
 def get_detailed_analysis(job_description, resume_text):
     """Получает детальный анализ резюме"""
-    # Разбиваем текст на секции
+    # Расширенные ключевые слова для поиска секций (регистронезависимо)
     sections = {
         "experience": ["опыт работы", "experience", "work experience"],
         "education": ["образование", "education"],
-        "skills": ["навыки", "skills", "технические навыки"],
+        "skills": [
+            "навыки",
+            "skills",
+            "технические навыки",
+            "знания и навыки",
+            "основной стек",
+        ],
     }
 
     analysis = {}
@@ -598,19 +604,19 @@ def get_detailed_analysis(job_description, resume_text):
     try:
         # Получаем эмбеддинги для всего текста
         job_embedding = model.encode(job_description)
+        resume_text_lower = resume_text.lower()
 
         # Анализируем каждую секцию
         for section, keywords in sections.items():
-            # Находим соответствующие части текста
             section_text = ""
             for keyword in keywords:
-                if keyword in resume_text.lower():
-                    # Извлекаем текст после ключевого слова до следующей секции
-                    idx = resume_text.lower().find(keyword)
+                keyword_lower = keyword.lower()
+                if keyword_lower in resume_text_lower:
+                    idx = resume_text_lower.find(keyword_lower)
                     next_section_idx = len(resume_text)
                     for other_keyword in [k for k in keywords if k != keyword]:
-                        other_idx = resume_text.lower().find(
-                            other_keyword, idx + len(keyword)
+                        other_idx = resume_text_lower.find(
+                            other_keyword.lower(), idx + len(keyword_lower)
                         )
                         if other_idx != -1:
                             next_section_idx = min(next_section_idx, other_idx)
@@ -618,20 +624,12 @@ def get_detailed_analysis(job_description, resume_text):
 
             if section_text:
                 try:
-                    # Получаем эмбеддинги для секции
                     section_embedding = model.encode(section_text)
-
-                    # Рассчитываем сходство
                     similarity = cosine_similarity(
                         section_embedding.reshape(1, -1), job_embedding.reshape(1, -1)
                     )[0][0]
-
-                    # Извлекаем навыки из секции
                     section_skills = extract_skills(section_text)
-
-                    # Извлекаем обязанности из секции
                     section_responsibilities = extract_responsibilities(section_text)
-
                     analysis[section] = {
                         "text": section_text,
                         "relevance": float(similarity * 100),
@@ -653,13 +651,11 @@ def get_detailed_analysis(job_description, resume_text):
                     "skills": [],
                     "responsibilities": [],
                 }
-
         # Рассчитываем общий процент соответствия
         if analysis:
             total_relevance = sum(section["relevance"] for section in analysis.values())
             average_relevance = total_relevance / len(analysis)
             analysis["overall_match"] = float(average_relevance)
-
     except Exception as e:
         print(f"Ошибка при детальном анализе: {str(e)}")
         return analysis
