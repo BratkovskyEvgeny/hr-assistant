@@ -348,24 +348,3 @@ if uploaded_file is not None and job_description:
                 st.write("**Отсутствующий опыт:**")
                 for exp in missing_experience:
                     st.write(f"- {exp}")
-
-    # Отображаем детальный анализ
-    st.markdown("### 📑 Детальный анализ")
-
-    # Создаем вкладки для разных секций
-    tabs = st.tabs(["Опыт работы", "Образование", "Навыки"])
-
-    section_mapping = {
-        "Опыт работы": "experience",
-        "Образование": "education",
-        "Навыки": "skills",
-    }
-
-    for tab, section in zip(tabs, section_mapping.keys()):
-        with tab:
-            if section_mapping[section] in detailed_analysis:
-                analysis = detailed_analysis[section_mapping[section]]
-                st.metric("Релевантность", f"{analysis['relevance']:.1f}%")
-                st.text_area("Текст", analysis["text"], height=150, disabled=True)
-            else:
-                st.info("Информация не найдена")
