@@ -249,108 +249,114 @@ def extract_skills(text):
     # Разбиваем текст на предложения
     sentences = sent_tokenize(text.lower())
 
-    # Словарь для хранения контекста использования навыков
-    skill_context = {}
+    # Ключевые слова для определения технических навыков
+    tech_keywords = {
+        "язык",
+        "language",
+        "framework",
+        "фреймворк",
+        "библиотека",
+        "library",
+        "база данных",
+        "database",
+        "инструмент",
+        "tool",
+        "технология",
+        "technology",
+        "платформа",
+        "platform",
+        "api",
+        "sdk",
+        "middleware",
+        "middleware",
+    }
 
-    # Ищем технические навыки в тексте с учетом контекста
+    # Стоп-слова для фильтрации
+    stop_words = {
+        "опыт",
+        "experience",
+        "работа",
+        "work",
+        "разработка",
+        "development",
+        "создание",
+        "creation",
+        "внедрение",
+        "implementation",
+        "использование",
+        "using",
+        "знание",
+        "knowledge",
+        "умение",
+        "ability",
+        "навык",
+        "skill",
+        "требование",
+        "requirement",
+        "обязанность",
+        "responsibility",
+        "задача",
+        "task",
+        "проект",
+        "project",
+    }
+
+    # Ищем технические навыки в тексте
     for sentence in sentences:
         words = sentence.split()
 
-        # Проверяем наличие ключевых слов опыта
-        has_experience = any(
-            word
-            in [
-                "опыт",
-                "experience",
-                "работал",
-                "worked",
-                "использовал",
-                "used",
-                "разработал",
-                "developed",
-                "создал",
-                "created",
-                "внедрил",
-                "implemented",
-            ]
-            for word in words
-        )
+        # Проверяем, содержит ли предложение ключевые слова технических навыков
+        has_tech_keyword = any(keyword in sentence for keyword in tech_keywords)
 
-        # Ищем слова, которые могут быть технологиями
-        for i, word in enumerate(words):
-            # Пропускаем короткие слова и стоп-слова
-            if len(word) < 3 or word in [
-                "the",
-                "and",
-                "for",
-                "with",
-                "using",
-                "use",
-                "used",
-            ]:
-                continue
+        if has_tech_keyword:
+            for i, word in enumerate(words):
+                # Пропускаем короткие слова, стоп-слова и слова с цифрами
+                if (
+                    len(word) < 3
+                    or word in stop_words
+                    or any(c.isdigit() for c in word)
+                    or word in ["the", "and", "for", "with", "using", "use", "used"]
+                ):
+                    continue
 
-            # Проверяем контекст вокруг слова
-            context = words[max(0, i - 3) : min(len(words), i + 4)]
+                # Проверяем контекст вокруг слова
+                context = words[max(0, i - 3) : min(len(words), i + 4)]
 
-            # Проверяем наличие отрицаний
-            has_negation = any(
-                neg in context[:i]
-                for neg in [
-                    "нет",
-                    "не",
-                    "без",
-                    "no",
-                    "not",
-                    "without",
-                    "хочу",
-                    "want",
-                    "желательно",
-                    "preferred",
-                ]
-            )
+                # Проверяем наличие отрицаний
+                has_negation = any(
+                    neg in context[:i]
+                    for neg in [
+                        "нет",
+                        "не",
+                        "без",
+                        "no",
+                        "not",
+                        "without",
+                        "хочу",
+                        "want",
+                        "желательно",
+                        "preferred",
+                    ]
+                )
 
-            # Проверяем наличие ключевых слов опыта
-            has_skill_experience = any(
-                word in RESPONSIBILITY_KEYWORDS for word in context
-            )
+                # Проверяем, что слово не является частью фразы
+                is_part_of_phrase = any(
+                    word in phrase
+                    for phrase in [
+                        "опыт работы",
+                        "work experience",
+                        "база данных",
+                        "database",
+                    ]
+                )
 
-            # Добавляем навык только если нет отрицания и есть опыт
-            if not has_negation and (has_experience or has_skill_experience):
-                skills.add(word)
-                # Сохраняем контекст использования
-                if word not in skill_context:
-                    skill_context[word] = []
-                skill_context[word].append(sentence)
+                if not has_negation and not is_part_of_phrase:
+                    # Очищаем слово от специальных символов
+                    clean_word = re.sub(r"[^\w\s]", "", word)
+                    if clean_word:
+                        skills.add(clean_word)
 
-    # Фильтруем навыки на основе контекста
-    filtered_skills = set()
-    for skill in skills:
-        contexts = skill_context[skill]
-        # Проверяем, что навык упоминается в контексте реального использования
-        if any(
-            any(
-                word in context
-                for word in [
-                    "разработка",
-                    "development",
-                    "создание",
-                    "creation",
-                    "внедрение",
-                    "implementation",
-                    "опыт",
-                    "experience",
-                    "использование",
-                    "using",
-                    "работа",
-                    "work",
-                ]
-            )
-            for context in contexts
-        ):
-            filtered_skills.add(skill)
-
-    return filtered_skills
+    return skills
 
 
 def extract_responsibilities(text):
