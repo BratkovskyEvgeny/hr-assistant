@@ -34,11 +34,52 @@ st.markdown(
         padding: 2rem;
     }
     
+    /* Анимации */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideIn {
+        from { transform: translateX(-20px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes scaleIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    /* Анимированные классы */
+    .fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+    
+    .slide-in {
+        animation: slideIn 0.5s ease-out forwards;
+    }
+    
+    .scale-in {
+        animation: scaleIn 0.5s ease-out forwards;
+    }
+    
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+    
     /* Стили для заголовков */
     h1, h2, h3 {
         color: #FFFFFF;
         font-weight: 600;
         margin-bottom: 1rem;
+        opacity: 0;
+        animation: fadeIn 0.5s ease-out forwards;
     }
     
     /* Стили для кнопок */
@@ -50,11 +91,14 @@ st.markdown(
         padding: 0.5rem 1rem;
         font-weight: 500;
         transition: all 0.3s ease;
+        opacity: 0;
+        animation: scaleIn 0.5s ease-out forwards;
     }
     
     .stButton>button:hover {
         background-color: #FF6B6B;
         box-shadow: 0 2px 8px rgba(255, 75, 75, 0.3);
+        transform: translateY(-2px);
     }
     
     /* Стили для текстовых полей */
@@ -63,15 +107,26 @@ st.markdown(
         color: #FFFFFF;
         border: 1px solid #3E3E3E;
         border-radius: 4px;
+        transition: all 0.3s ease;
+        opacity: 0;
+        animation: slideIn 0.5s ease-out forwards;
+    }
+    
+    .stTextArea>div>div>textarea:focus {
+        border-color: #FF4B4B;
+        box-shadow: 0 0 0 2px rgba(255, 75, 75, 0.2);
     }
     
     /* Стили для прогресс-бара */
     .stProgress .st-bo {
         background-color: #FF4B4B;
+        opacity: 0;
+        animation: scaleIn 0.5s ease-out forwards;
     }
     
     .stProgress .st-bp {
         background-color: #FF6B6B;
+        transition: width 0.5s ease-out;
     }
     
     /* Стили для алертов */
@@ -80,6 +135,8 @@ st.markdown(
         border: 1px solid #3E3E3E;
         border-radius: 4px;
         color: #FFFFFF;
+        opacity: 0;
+        animation: fadeIn 0.5s ease-out forwards;
     }
     
     /* Стили для вкладок */
@@ -87,6 +144,8 @@ st.markdown(
         background-color: #262730;
         border-radius: 4px;
         padding: 0.5rem;
+        opacity: 0;
+        animation: slideIn 0.5s ease-out forwards;
     }
     
     .stTabs [data-baseweb="tab"] {
@@ -96,6 +155,7 @@ st.markdown(
     
     .stTabs [data-baseweb="tab"]:hover {
         background-color: #3E3E3E;
+        transform: translateY(-2px);
     }
     
     /* Стили для метрик */
@@ -104,6 +164,14 @@ st.markdown(
         border-radius: 4px;
         padding: 1rem;
         margin: 0.5rem 0;
+        opacity: 0;
+        animation: scaleIn 0.5s ease-out forwards;
+        transition: all 0.3s ease;
+    }
+    
+    .stMetric:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
     
     /* Стили для списков */
@@ -113,6 +181,15 @@ st.markdown(
         padding: 0.8rem 1.2rem;
         margin: 0.5rem 0;
         border: 1px solid #3E3E3E;
+        opacity: 0;
+        animation: slideIn 0.5s ease-out forwards;
+        transition: all 0.3s ease;
+    }
+    
+    .skill-item:hover {
+        transform: translateX(10px);
+        background-color: #3E3E3E;
+        border-color: #FF4B4B;
     }
     
     /* Стили для файлового загрузчика */
@@ -121,12 +198,32 @@ st.markdown(
         border: 1px solid #3E3E3E;
         border-radius: 4px;
         padding: 1rem;
+        opacity: 0;
+        animation: fadeIn 0.5s ease-out forwards;
+        transition: all 0.3s ease;
+    }
+    
+    .stFileUploader>div:hover {
+        border-color: #FF4B4B;
+        transform: translateY(-2px);
     }
     
     /* Стили для разделителей */
     hr {
         border-color: #3E3E3E;
         margin: 2rem 0;
+        opacity: 0;
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+    
+    /* Анимация для заголовка */
+    .header-animation {
+        opacity: 0;
+        animation: fadeIn 1s ease-out forwards;
+    }
+    
+    .header-animation h1 {
+        animation: pulse 2s infinite;
     }
     </style>
 """,
@@ -136,7 +233,7 @@ st.markdown(
 # Заголовок
 st.markdown(
     """
-    <div style='text-align: center; margin-bottom: 3rem;'>
+    <div class='header-animation' style='text-align: center; margin-bottom: 3rem;'>
         <h1 style='font-size: 2.5rem; margin-bottom: 1rem;'>
             🤖 HR Assistant
         </h1>
