@@ -586,38 +586,82 @@ def get_detailed_analysis(job_description, resume_text):
         "experience": ["опыт работы", "experience", "work experience"],
         "education": ["образование", "education"],
         "skills": ["навыки", "skills", "технические навыки"],
-        "projects": ["проекты", "projects"],
     }
 
     analysis = {}
     model = get_model()
 
-    # Анализируем каждую секцию
-    for section, keywords in sections.items():
-        # Находим соответствующие части текста
-        section_text = ""
-        for keyword in keywords:
-            if keyword in resume_text.lower():
-                # Извлекаем текст после ключевого слова
-                idx = resume_text.lower().find(keyword)
-                section_text += resume_text[idx:].split("\n")[0] + "\n"
+    if model is None:
+        print("Ошибка: модель не была загружена")
+        return analysis
 
-        if section_text:
-            try:
-                # Получаем эмбеддинги для анализа
-                section_embedding = model.encode(section_text)
-                job_embedding = model.encode(job_description)
+    try:
+        # Получаем эмбеддинги для всего текста
+        job_embedding = model.encode(job_description)
 
-                # Рассчитываем сходство
-                similarity = cosine_similarity(
-                    section_embedding.reshape(1, -1), job_embedding.reshape(1, -1)
-                )[0][0]
+        # Анализируем каждую секцию
+        for section, keywords in sections.items():
+            # Находим соответствующие части текста
+            section_text = ""
+            for keyword in keywords:
+                if keyword in resume_text.lower():
+                    # Извлекаем текст после ключевого слова до следующей секции
+                    idx = resume_text.lower().find(keyword)
+                    next_section_idx = len(resume_text)
+                    for other_keyword in [k for k in keywords if k != keyword]:
+                        other_idx = resume_text.lower().find(
+                            other_keyword, idx + len(keyword)
+                        )
+                        if other_idx != -1:
+                            next_section_idx = min(next_section_idx, other_idx)
+                    section_text += resume_text[idx:next_section_idx].strip() + "\n"
 
+            if section_text:
+                try:
+                    # Получаем эмбеддинги для секции
+                    section_embedding = model.encode(section_text)
+
+                    # Рассчитываем сходство
+                    similarity = cosine_similarity(
+                        section_embedding.reshape(1, -1), job_embedding.reshape(1, -1)
+                    )[0][0]
+
+                    # Извлекаем навыки из секции
+                    section_skills = extract_skills(section_text)
+
+                    # Извлекаем обязанности из секции
+                    section_responsibilities = extract_responsibilities(section_text)
+
+                    analysis[section] = {
+                        "text": section_text,
+                        "relevance": float(similarity * 100),
+                        "skills": list(section_skills),
+                        "responsibilities": section_responsibilities,
+                    }
+                except Exception as e:
+                    print(f"Ошибка при анализе секции {section}: {str(e)}")
+                    analysis[section] = {
+                        "text": section_text,
+                        "relevance": 0.0,
+                        "skills": [],
+                        "responsibilities": [],
+                    }
+            else:
                 analysis[section] = {
-                    "text": section_text,
-                    "relevance": similarity * 100,
+                    "text": "",
+                    "relevance": 0.0,
+                    "skills": [],
+                    "responsibilities": [],
                 }
-            except Exception as e:
-                print(f"Ошибка при анализе секции {section}: {str(e)}")
+
+        # Рассчитываем общий процент соответствия
+        if analysis:
+            total_relevance = sum(section["relevance"] for section in analysis.values())
+            average_relevance = total_relevance / len(analysis)
+            analysis["overall_match"] = float(average_relevance)
+
+    except Exception as e:
+        print(f"Ошибка при детальном анализе: {str(e)}")
+        return analysis
 
     return analysis

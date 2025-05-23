@@ -279,52 +279,75 @@ if uploaded_file is not None and job_description:
 
     st.markdown("### 📊 Результаты анализа")
 
-    # Создаем колонки для отображения результатов
-    col1, col2 = st.columns(2)
-
-    with col1:
+    # Отображаем результаты анализа
+    if analysis_results:
+        # Отображаем общий процент соответствия
+        overall_match = analysis_results.get("overall_match", 0.0)
         st.metric(
-            "Процент соответствия",
-            f"{similarity_score:.1f}%",
-            delta=f"{similarity_score - 50:.1f}%" if similarity_score > 50 else None,
+            "Общее соответствие",
+            f"{overall_match:.1f}%",
+            delta=f"{overall_match - 50:.1f}%",
+            delta_color="normal" if overall_match >= 50 else "inverse",
         )
 
-    with col2:
-        if analysis_results["missing_skills"] or analysis_results["missing_experience"]:
-            st.warning("Обнаружены несоответствия")
-        else:
-            st.success("Все требования соответствуют!")
+        # Создаем вкладки для разных типов анализа
+        tab1, tab2, tab3 = st.tabs(["Опыт работы", "Образование", "Навыки"])
 
-    # Отображаем отсутствующие навыки
-    if analysis_results["missing_skills"]:
-        st.markdown("### 🔍 Отсутствующие навыки")
+        with tab1:
+            if "experience" in analysis_results:
+                exp_data = analysis_results["experience"]
+                st.subheader("Опыт работы")
+                st.write(f"**Соответствие:** {exp_data['relevance']:.1f}%")
 
-        # Сортируем навыки для лучшей читаемости
-        missing_skills = sorted(analysis_results["missing_skills"])
-        # Отображаем навыки в виде списка
-        for skill in missing_skills:
-            st.markdown(
-                f"""
-                <div class='skill-item'>
-                    • {skill}
-                </div>
-            """,
-                unsafe_allow_html=True,
-            )
+                if exp_data["responsibilities"]:
+                    st.write("**Обязанности:**")
+                    for resp in exp_data["responsibilities"]:
+                        st.write(f"- {resp}")
 
-    # Отображаем отсутствующий опыт
-    if analysis_results["missing_experience"]:
-        st.markdown("### ⚠️ Отсутствующий опыт")
+                if exp_data["skills"]:
+                    st.write("**Приобретенные навыки:**")
+                    for skill in exp_data["skills"]:
+                        st.write(f"- {skill}")
 
-        for exp in analysis_results["missing_experience"]:
-            st.markdown(
-                f"""
-                <div class='skill-item'>
-                    • {exp}
-                </div>
-            """,
-                unsafe_allow_html=True,
-            )
+        with tab2:
+            if "education" in analysis_results:
+                edu_data = analysis_results["education"]
+                st.subheader("Образование")
+                st.write(f"**Соответствие:** {edu_data['relevance']:.1f}%")
+
+                if edu_data["text"]:
+                    st.write("**Детали образования:**")
+                    st.write(edu_data["text"])
+
+                if edu_data["skills"]:
+                    st.write("**Приобретенные навыки:**")
+                    for skill in edu_data["skills"]:
+                        st.write(f"- {skill}")
+
+        with tab3:
+            if "skills" in analysis_results:
+                skills_data = analysis_results["skills"]
+                st.subheader("Навыки")
+                st.write(f"**Соответствие:** {skills_data['relevance']:.1f}%")
+
+                if skills_data["skills"]:
+                    st.write("**Технические навыки:**")
+                    for skill in skills_data["skills"]:
+                        st.write(f"- {skill}")
+
+        # Отображаем отсутствующие навыки и опыт
+        missing_skills = analysis_results.get("missing_skills", [])
+        missing_experience = analysis_results.get("missing_experience", [])
+        if missing_skills or missing_experience:
+            st.warning("**Отсутствующие навыки и опыт:**")
+            if missing_skills:
+                st.write("**Отсутствующие навыки:**")
+                for skill in missing_skills:
+                    st.write(f"- {skill}")
+            if missing_experience:
+                st.write("**Отсутствующий опыт:**")
+                for exp in missing_experience:
+                    st.write(f"- {exp}")
 
     # Отображаем детальный анализ
     st.markdown("### 📑 Детальный анализ")
