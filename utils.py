@@ -9,12 +9,21 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # Загрузка необходимых ресурсов NLTK
-nltk.download("punkt")
-nltk.download("stopwords")
-nltk.download("averaged_perceptron_tagger")
+nltk.download("punkt", quiet=True)
+nltk.download("stopwords", quiet=True)
+nltk.download("averaged_perceptron_tagger", quiet=True)
 
 # Инициализация модели для многоязычного анализа
-model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+model = None
+
+
+def get_model():
+    """Ленивая загрузка модели"""
+    global model
+    if model is None:
+        model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+    return model
+
 
 # Словари технических навыков
 TECH_SKILLS = {
@@ -216,6 +225,7 @@ def preprocess_text(text):
 def calculate_similarity(job_description, resume_text):
     """Рассчитывает процент соответствия резюме требованиям вакансии"""
     try:
+        model = get_model()
         # Получаем эмбеддинги текстов
         job_embedding = model.encode(job_description)
         resume_embedding = model.encode(resume_text)
@@ -347,6 +357,7 @@ def extract_responsibilities(text):
     """Извлекает обязанности из текста"""
     responsibilities = []
     sentences = sent_tokenize(text.lower())
+    model = get_model()
 
     for sentence in sentences:
         # Проверяем, содержит ли предложение ключевые слова обязанностей
@@ -386,6 +397,7 @@ def analyze_skills(job_description, resume_text):
 
     # Анализируем отсутствующий опыт
     missing_experience = []
+    model = get_model()
     for job_resp in job_responsibilities:
         job_resp_embedding = model.encode(job_resp)
         max_similarity = 0
@@ -413,6 +425,7 @@ def get_detailed_analysis(job_description, resume_text):
     }
 
     analysis = {}
+    model = get_model()
 
     # Анализируем каждую секцию
     for section, keywords in sections.items():
