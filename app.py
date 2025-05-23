@@ -23,142 +23,124 @@ st.markdown(
     <style>
     /* Основные стили */
     .main {
-        background-color: #1a1a1a;
-        color: #ffd700;
-        padding: 2rem;
+        background-color: #0E1117;
+        color: #FFFFFF;
     }
     
     /* Стили для контейнеров */
-    .container {
-        background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-        border: 1px solid #ffd700;
-        border-radius: 15px;
+    .stApp {
+        max-width: 1200px;
+        margin: 0 auto;
         padding: 2rem;
-        margin: 1rem 0;
-        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.1);
-        transition: all 0.3s ease;
-    }
-    
-    .container:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
     }
     
     /* Стили для заголовков */
     h1, h2, h3 {
-        color: #ffd700;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        color: #FFFFFF;
+        font-weight: 600;
+        margin-bottom: 1rem;
     }
     
     /* Стили для кнопок */
     .stButton>button {
-        background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-        color: #ffd700;
-        border: 1px solid #ffd700;
-        border-radius: 8px;
+        background-color: #FF4B4B;
+        color: white;
+        border: none;
+        border-radius: 4px;
         padding: 0.5rem 1rem;
+        font-weight: 500;
         transition: all 0.3s ease;
     }
     
     .stButton>button:hover {
-        background: linear-gradient(145deg, #ffd700, #ffa500);
-        color: #1a1a1a;
-        transform: scale(1.05);
+        background-color: #FF6B6B;
+        box-shadow: 0 2px 8px rgba(255, 75, 75, 0.3);
     }
     
     /* Стили для текстовых полей */
     .stTextArea>div>div>textarea {
-        background-color: #2a2a2a;
-        color: #ffd700;
-        border: 1px solid #ffd700;
-        border-radius: 8px;
+        background-color: #262730;
+        color: #FFFFFF;
+        border: 1px solid #3E3E3E;
+        border-radius: 4px;
     }
     
     /* Стили для прогресс-бара */
     .stProgress .st-bo {
-        background-color: #ffd700;
+        background-color: #FF4B4B;
     }
     
     .stProgress .st-bp {
-        background-color: #ffa500;
+        background-color: #FF6B6B;
     }
     
     /* Стили для алертов */
     .stAlert {
-        background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-        border: 1px solid #ffd700;
-        border-radius: 8px;
-        color: #ffd700;
+        background-color: #262730;
+        border: 1px solid #3E3E3E;
+        border-radius: 4px;
+        color: #FFFFFF;
     }
     
     /* Стили для вкладок */
     .stTabs [data-baseweb="tab-list"] {
-        background-color: #1a1a1a;
-        border: 1px solid #ffd700;
-        border-radius: 8px;
+        background-color: #262730;
+        border-radius: 4px;
+        padding: 0.5rem;
     }
     
     .stTabs [data-baseweb="tab"] {
-        color: #ffd700;
+        color: #FFFFFF;
         transition: all 0.3s ease;
     }
     
     .stTabs [data-baseweb="tab"]:hover {
-        background-color: #2a2a2a;
-    }
-    
-    /* Анимации */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .fade-in {
-        animation: fadeIn 0.5s ease-out;
+        background-color: #3E3E3E;
     }
     
     /* Стили для метрик */
     .stMetric {
-        background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-        border: 1px solid #ffd700;
-        border-radius: 8px;
+        background-color: #262730;
+        border-radius: 4px;
         padding: 1rem;
-        transition: all 0.3s ease;
-    }
-    
-    .stMetric:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+        margin: 0.5rem 0;
     }
     
     /* Стили для списков */
     .skill-item {
-        background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-        border: 1px solid #ffd700;
-        border-radius: 8px;
+        background-color: #262730;
+        border-radius: 4px;
         padding: 0.8rem 1.2rem;
         margin: 0.5rem 0;
-        transition: all 0.3s ease;
+        border: 1px solid #3E3E3E;
     }
     
-    .skill-item:hover {
-        transform: translateX(10px);
-        background: linear-gradient(145deg, #ffd700, #ffa500);
-        color: #1a1a1a;
+    /* Стили для файлового загрузчика */
+    .stFileUploader>div {
+        background-color: #262730;
+        border: 1px solid #3E3E3E;
+        border-radius: 4px;
+        padding: 1rem;
+    }
+    
+    /* Стили для разделителей */
+    hr {
+        border-color: #3E3E3E;
+        margin: 2rem 0;
     }
     </style>
 """,
     unsafe_allow_html=True,
 )
 
-# Заголовок с анимацией
+# Заголовок
 st.markdown(
     """
-    <div class='container fade-in' style='text-align: center;'>
-        <h1 style='font-size: 3.5em; margin-bottom: 1rem;'>
+    <div style='text-align: center; margin-bottom: 3rem;'>
+        <h1 style='font-size: 2.5rem; margin-bottom: 1rem;'>
             🤖 HR Assistant
         </h1>
-        <p style='color: #ffd700; font-size: 1.4em;'>
+        <p style='color: #9CA3AF; font-size: 1.2rem;'>
             Оценка соответствия резюме требованиям вакансии
         </p>
     </div>
@@ -166,40 +148,21 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Создаем две колонки для основного контента
-col1, col2 = st.columns([1, 1])
+# Основной контент
+st.markdown("### 📋 Описание вакансии")
+job_description = st.text_area(
+    "Введите описание вакансии",
+    height=200,
+    help="Опишите требования к вакансии, необходимые навыки и опыт",
+    placeholder="Вставьте текст описания вакансии здесь...",
+)
 
-with col1:
-    # Секция для ввода описания вакансии
-    st.markdown(
-        """
-        <div class='container fade-in'>
-            <h2 style='margin-bottom: 1.5rem;'>📋 Описание вакансии</h2>
-        </div>
-    """,
-        unsafe_allow_html=True,
-    )
-
-    job_description = st.text_area(
-        "Введите описание вакансии",
-        height=200,
-        help="Опишите требования к вакансии, необходимые навыки и опыт",
-    )
-
-with col2:
-    # Секция для загрузки резюме
-    st.markdown(
-        """
-        <div class='container fade-in'>
-            <h2 style='margin-bottom: 1.5rem;'>📄 Загрузка резюме</h2>
-        </div>
-    """,
-        unsafe_allow_html=True,
-    )
-
-    uploaded_file = st.file_uploader(
-        "Загрузите резюме (PDF или DOCX)", type=["pdf", "docx"]
-    )
+st.markdown("### 📄 Загрузка резюме")
+uploaded_file = st.file_uploader(
+    "Загрузите резюме (PDF или DOCX)",
+    type=["pdf", "docx"],
+    help="Поддерживаются файлы в форматах PDF и DOCX",
+)
 
 if uploaded_file is not None and job_description:
     # Показываем прогресс анализа
@@ -217,15 +180,7 @@ if uploaded_file is not None and job_description:
         analysis_results = analyze_skills(job_description, resume_text)
         detailed_analysis = get_detailed_analysis(job_description, resume_text)
 
-    # Отображаем результаты
-    st.markdown(
-        """
-        <div class='container fade-in'>
-            <h2 style='margin-bottom: 1.5rem;'>📊 Результаты анализа</h2>
-        </div>
-    """,
-        unsafe_allow_html=True,
-    )
+    st.markdown("### 📊 Результаты анализа")
 
     # Создаем колонки для отображения результатов
     col1, col2 = st.columns(2)
@@ -245,14 +200,7 @@ if uploaded_file is not None and job_description:
 
     # Отображаем отсутствующие навыки
     if analysis_results["missing_skills"]:
-        st.markdown(
-            """
-            <div class='container fade-in'>
-                <h3 style='margin-bottom: 1.5rem;'>🔍 Отсутствующие навыки</h3>
-            </div>
-        """,
-            unsafe_allow_html=True,
-        )
+        st.markdown("### 🔍 Отсутствующие навыки")
 
         # Сортируем навыки для лучшей читаемости
         missing_skills = sorted(analysis_results["missing_skills"])
@@ -260,7 +208,7 @@ if uploaded_file is not None and job_description:
         for skill in missing_skills:
             st.markdown(
                 f"""
-                <div class='skill-item fade-in'>
+                <div class='skill-item'>
                     • {skill}
                 </div>
             """,
@@ -269,19 +217,12 @@ if uploaded_file is not None and job_description:
 
     # Отображаем отсутствующий опыт
     if analysis_results["missing_experience"]:
-        st.markdown(
-            """
-            <div class='container fade-in'>
-                <h3 style='margin-bottom: 1.5rem;'>⚠️ Отсутствующий опыт</h3>
-            </div>
-        """,
-            unsafe_allow_html=True,
-        )
+        st.markdown("### ⚠️ Отсутствующий опыт")
 
         for exp in analysis_results["missing_experience"]:
             st.markdown(
                 f"""
-                <div class='skill-item fade-in'>
+                <div class='skill-item'>
                     • {exp}
                 </div>
             """,
@@ -289,14 +230,7 @@ if uploaded_file is not None and job_description:
             )
 
     # Отображаем детальный анализ
-    st.markdown(
-        """
-        <div class='container fade-in'>
-            <h2 style='margin-bottom: 1.5rem;'>📑 Детальный анализ</h2>
-        </div>
-    """,
-        unsafe_allow_html=True,
-    )
+    st.markdown("### 📑 Детальный анализ")
 
     # Создаем вкладки для разных секций
     tabs = st.tabs(["Опыт работы", "Образование", "Навыки"])
