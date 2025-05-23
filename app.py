@@ -46,22 +46,16 @@ if uploaded_file is not None and job_description:
         st.metric("Процент соответствия", f"{similarity_score:.1f}%")
 
     with col2:
-        if (
-            any(analysis_results["missing_skills"].values())
-            or analysis_results["missing_experience"]
-        ):
+        if analysis_results["missing_skills"] or analysis_results["missing_experience"]:
             st.warning("Обнаружены несоответствия")
         else:
             st.success("Все требования соответствуют!")
 
-    # Отображаем отсутствующие навыки по категориям
-    st.subheader("🔍 Отсутствующие навыки")
-
-    for category, skills in analysis_results["missing_skills"].items():
-        if skills:
-            with st.expander(f"📚 {category.capitalize()}"):
-                for skill in sorted(skills):
-                    st.write(f"- {skill}")
+    # Отображаем отсутствующие навыки
+    if analysis_results["missing_skills"]:
+        st.subheader("🔍 Отсутствующие навыки")
+        for skill in sorted(analysis_results["missing_skills"]):
+            st.write(f"- {skill}")
 
     # Отображаем отсутствующий опыт
     if analysis_results["missing_experience"]:
