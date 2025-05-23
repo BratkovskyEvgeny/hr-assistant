@@ -1,7 +1,6 @@
 import time
 
 import streamlit as st
-import streamlit as st
 
 from utils import (
     analyze_skills,
@@ -22,36 +21,130 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+    /* Основные стили */
     .main {
+        background-color: #1a1a1a;
+        color: #ffd700;
         padding: 2rem;
     }
+    
+    /* Стили для контейнеров */
+    .container {
+        background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+        border: 1px solid #ffd700;
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
+    }
+    
+    /* Стили для заголовков */
+    h1, h2, h3 {
+        color: #ffd700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+    
+    /* Стили для кнопок */
     .stButton>button {
-        width: 100%;
-        border-radius: 5px;
-        height: 3em;
-        background-color: #4CAF50;
-        color: white;
-        font-size: 1.2em;
+        background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+        color: #ffd700;
+        border: 1px solid #ffd700;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
     }
+    
     .stButton>button:hover {
-        background-color: #45a049;
+        background: linear-gradient(145deg, #ffd700, #ffa500);
+        color: #1a1a1a;
+        transform: scale(1.05);
     }
-    .css-1d391kg {
-        padding: 2rem;
+    
+    /* Стили для текстовых полей */
+    .stTextArea>div>div>textarea {
+        background-color: #2a2a2a;
+        color: #ffd700;
+        border: 1px solid #ffd700;
+        border-radius: 8px;
     }
+    
+    /* Стили для прогресс-бара */
     .stProgress .st-bo {
-        background-color: #4CAF50;
+        background-color: #ffd700;
     }
+    
     .stProgress .st-bp {
-        background-color: #45a049;
+        background-color: #ffa500;
     }
+    
+    /* Стили для алертов */
     .stAlert {
-        border-radius: 5px;
-        padding: 1rem;
+        background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+        border: 1px solid #ffd700;
+        border-radius: 8px;
+        color: #ffd700;
     }
-    .stExpander {
-        border-radius: 5px;
-        border: 1px solid #e0e0e0;
+    
+    /* Стили для вкладок */
+    .stTabs [data-baseweb="tab-list"] {
+        background-color: #1a1a1a;
+        border: 1px solid #ffd700;
+        border-radius: 8px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        color: #ffd700;
+        transition: all 0.3s ease;
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: #2a2a2a;
+    }
+    
+    /* Анимации */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    /* Стили для метрик */
+    .stMetric {
+        background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+        border: 1px solid #ffd700;
+        border-radius: 8px;
+        padding: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stMetric:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+    }
+    
+    /* Стили для списков */
+    .skill-item {
+        background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+        border: 1px solid #ffd700;
+        border-radius: 8px;
+        padding: 0.8rem 1.2rem;
+        margin: 0.5rem 0;
+        transition: all 0.3s ease;
+    }
+    
+    .skill-item:hover {
+        transform: translateX(10px);
+        background: linear-gradient(145deg, #ffd700, #ffa500);
+        color: #1a1a1a;
     }
     </style>
 """,
@@ -61,12 +154,12 @@ st.markdown(
 # Заголовок с анимацией
 st.markdown(
     """
-    <div style='text-align: center; padding: 2rem;'>
-        <h1 style='color: #2E4053; font-size: 3em; margin-bottom: 1rem;'>
-            🤖 HR Assistant - Оценка резюме
+    <div class='container fade-in' style='text-align: center;'>
+        <h1 style='font-size: 3.5em; margin-bottom: 1rem;'>
+            🤖 HR Assistant
         </h1>
-        <p style='color: #566573; font-size: 1.2em;'>
-            Анализ соответствия резюме требованиям вакансии
+        <p style='color: #ffd700; font-size: 1.4em;'>
+            Оценка соответствия резюме требованиям вакансии
         </p>
     </div>
 """,
@@ -80,8 +173,8 @@ with col1:
     # Секция для ввода описания вакансии
     st.markdown(
         """
-        <div style='background-color: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem;'>
-            <h2 style='color: #2E4053; margin-bottom: 1rem;'>📋 Описание вакансии</h2>
+        <div class='container fade-in'>
+            <h2 style='margin-bottom: 1.5rem;'>📋 Описание вакансии</h2>
         </div>
     """,
         unsafe_allow_html=True,
@@ -97,8 +190,8 @@ with col2:
     # Секция для загрузки резюме
     st.markdown(
         """
-        <div style='background-color: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem;'>
-            <h2 style='color: #2E4053; margin-bottom: 1rem;'>📄 Загрузка резюме</h2>
+        <div class='container fade-in'>
+            <h2 style='margin-bottom: 1.5rem;'>📄 Загрузка резюме</h2>
         </div>
     """,
         unsafe_allow_html=True,
@@ -127,8 +220,8 @@ if uploaded_file is not None and job_description:
     # Отображаем результаты
     st.markdown(
         """
-        <div style='background-color: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin: 2rem 0;'>
-            <h2 style='color: #2E4053; margin-bottom: 1rem;'>📊 Результаты анализа</h2>
+        <div class='container fade-in'>
+            <h2 style='margin-bottom: 1.5rem;'>📊 Результаты анализа</h2>
         </div>
     """,
         unsafe_allow_html=True,
@@ -154,8 +247,8 @@ if uploaded_file is not None and job_description:
     if analysis_results["missing_skills"]:
         st.markdown(
             """
-            <div style='background-color: #fff3cd; padding: 1.5rem; border-radius: 10px; margin: 1rem 0;'>
-                <h3 style='color: #856404; margin-bottom: 1rem;'>🔍 Отсутствующие навыки</h3>
+            <div class='container fade-in'>
+                <h3 style='margin-bottom: 1.5rem;'>🔍 Отсутствующие навыки</h3>
             </div>
         """,
             unsafe_allow_html=True,
@@ -167,7 +260,7 @@ if uploaded_file is not None and job_description:
         for skill in missing_skills:
             st.markdown(
                 f"""
-                <div style='background-color: #fff; padding: 0.5rem 1rem; border-radius: 5px; margin: 0.5rem 0;'>
+                <div class='skill-item fade-in'>
                     • {skill}
                 </div>
             """,
@@ -178,8 +271,8 @@ if uploaded_file is not None and job_description:
     if analysis_results["missing_experience"]:
         st.markdown(
             """
-            <div style='background-color: #f8d7da; padding: 1.5rem; border-radius: 10px; margin: 1rem 0;'>
-                <h3 style='color: #721c24; margin-bottom: 1rem;'>⚠️ Отсутствующий опыт</h3>
+            <div class='container fade-in'>
+                <h3 style='margin-bottom: 1.5rem;'>⚠️ Отсутствующий опыт</h3>
             </div>
         """,
             unsafe_allow_html=True,
@@ -188,7 +281,7 @@ if uploaded_file is not None and job_description:
         for exp in analysis_results["missing_experience"]:
             st.markdown(
                 f"""
-                <div style='background-color: #fff; padding: 0.5rem 1rem; border-radius: 5px; margin: 0.5rem 0;'>
+                <div class='skill-item fade-in'>
                     • {exp}
                 </div>
             """,
@@ -198,8 +291,8 @@ if uploaded_file is not None and job_description:
     # Отображаем детальный анализ
     st.markdown(
         """
-        <div style='background-color: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin: 2rem 0;'>
-            <h2 style='color: #2E4053; margin-bottom: 1rem;'>📑 Детальный анализ</h2>
+        <div class='container fade-in'>
+            <h2 style='margin-bottom: 1.5rem;'>📑 Детальный анализ</h2>
         </div>
     """,
         unsafe_allow_html=True,
