@@ -1,28 +1,50 @@
+import os
 import re
 
 import nltk
+import numpy as np
 import PyPDF2
 from docx import Document
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+from transformers import logging
 
-# Загрузка необходимых ресурсов NLTK
-nltk.download("punkt", quiet=True)
-nltk.download("stopwords", quiet=True)
-nltk.download("averaged_perceptron_tagger", quiet=True)
+# Отключаем предупреждения transformers
+logging.set_verbosity_error()
+
+# Загружаем необходимые ресурсы NLTK
+try:
+    nltk.data.find("tokenizers/punkt")
+except LookupError:
+    nltk.download("punkt", quiet=True)
+
+# Путь для кэширования модели
+CACHE_DIR = os.path.join(os.path.dirname(__file__), "model_cache")
 
 # Инициализация модели для многоязычного анализа
 model = None
 
 
-def get_model():
-    """Ленивая загрузка модели"""
-    global model
-    if model is None:
-        model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
-    return model
+def get_model() -> SentenceTransformer:
+    """Получает модель с кэшированием"""
+    try:
+        # Проверяем наличие кэшированной модели
+        if os.path.exists(CACHE_DIR):
+            return SentenceTransformer(
+                "paraphrase-multilingual-MiniLM-L12-v2", cache_folder=CACHE_DIR
+            )
+
+        # Если кэша нет, создаем директорию и загружаем модель
+        os.makedirs(CACHE_DIR, exist_ok=True)
+        return SentenceTransformer(
+            "paraphrase-multilingual-MiniLM-L12-v2", cache_folder=CACHE_DIR
+        )
+    except Exception as e:
+        print(f"Ошибка при загрузке модели: {str(e)}")
+        # Возвращаем None в случае ошибки
+        return None
 
 
 # Словари технических навыков
@@ -222,23 +244,39 @@ def preprocess_text(text):
     return " ".join(tokens)
 
 
-def calculate_similarity(job_description, resume_text):
-    """Рассчитывает процент соответствия резюме требованиям вакансии"""
+def calculate_similarity(text1: str, text2: str) -> float:
+    """Вычисляет семантическую схожесть между двумя текстами"""
     try:
         model = get_model()
-        # Получаем эмбеддинги текстов
-        job_embedding = model.encode(job_description)
-        resume_embedding = model.encode(resume_text)
+        if model is None:
+            return 0.0
 
-        # Рассчитываем косинусное сходство
-        similarity = cosine_similarity(
-            job_embedding.reshape(1, -1), resume_embedding.reshape(1, -1)
-        )[0][0]
+        # Разбиваем тексты на предложения
+        sentences1 = sent_tokenize(text1)
+        sentences2 = sent_tokenize(text2)
 
-        # Преобразование в проценты
-        return similarity * 100
+        # Получаем эмбеддинги
+        embeddings1 = model.encode(sentences1)
+        embeddings2 = model.encode(sentences2)
+
+        # Вычисляем косинусное сходство
+        similarity = np.mean(
+            [
+                np.max(
+                    [
+                        np.dot(emb1, emb2)
+                        / (np.linalg.norm(emb1) * np.linalg.norm(emb2))
+                        for emb2 in embeddings2
+                    ]
+                )
+                for emb1 in embeddings1
+            ]
+        )
+
+        # Преобразуем в проценты
+        return float(similarity * 100)
     except Exception as e:
-        print(f"Ошибка при расчете схожести: {str(e)}")
+        print(f"Ошибка при вычислении схожести: {str(e)}")
         return 0.0
 
 
