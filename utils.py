@@ -475,7 +475,7 @@ def analyze_skills(job_description, resume_text):
 
 def get_detailed_analysis(job_description, resume_text):
     """Получает детальный анализ резюме и возвращает найденные заголовки для отладки"""
-    # Ключевые слова для поиска секций (регистронезависимо)
+    # Ключевые слова для поиска секций (регистронезависимо, с учетом спецсимволов)
     sections = {
         "experience": ["опыт работы", "experience", "work experience"],
         "education": ["образование", "education"],
@@ -495,11 +495,13 @@ def get_detailed_analysis(job_description, resume_text):
         return analysis
 
     resume_text_lower = resume_text.lower()
-    # Собираем все заголовки и их позиции
+    # Собираем все заголовки и их позиции с учетом запятых, пробелов и переносов
     found_headers = []
     for section, keywords in sections.items():
         for keyword in keywords:
-            for match in re.finditer(re.escape(keyword.lower()), resume_text_lower):
+            # Регулярка: ищет заголовок как отдельное слово, с возможными пробелами, запятыми, переносами
+            pattern = r"[\s,\n\r]*" + re.escape(keyword.lower()) + r"[\s,\n\r]*"
+            for match in re.finditer(pattern, resume_text_lower):
                 found_headers.append(
                     {
                         "section": section,
