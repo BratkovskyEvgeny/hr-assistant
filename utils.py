@@ -207,30 +207,80 @@ def extract_skills(text):
     # Разбиваем текст на предложения
     sentences = sent_tokenize(text.lower())
 
-    # Ищем технические навыки в тексте
-    for category, skill_set in TECH_SKILLS.items():
-        for skill in skill_set:
-            if skill.lower() in text.lower():
-                skills[category].add(skill)
+    # Словарь для хранения контекста использования навыков
+    skill_context = {category: {} for category in TECH_SKILLS.keys()}
 
-    # Ищем навыки в контексте предложений
+    # Ищем технические навыки в тексте с учетом контекста
     for sentence in sentences:
         words = sentence.split()
+
+        # Проверяем наличие ключевых слов опыта
+        has_experience = any(
+            word in ["опыт", "experience", "работал", "worked", "использовал", "used"]
+            for word in words
+        )
+
         for category, skill_set in TECH_SKILLS.items():
             for skill in skill_set:
-                if skill.lower() in words:
-                    # Проверяем контекст использования навыка
+                skill_lower = skill.lower()
+
+                # Проверяем точное совпадение слова
+                if skill_lower in words:
+                    # Получаем контекст вокруг навыка
                     try:
-                        skill_index = words.index(skill.lower())
+                        skill_index = words.index(skill_lower)
                         context = words[
                             max(0, skill_index - 3) : min(len(words), skill_index + 4)
                         ]
-                        if any(word in RESPONSIBILITY_KEYWORDS for word in context):
+
+                        # Проверяем наличие отрицаний
+                        has_negation = any(
+                            word in ["нет", "не", "без", "no", "not", "without"]
+                            for word in context[:skill_index]
+                        )
+
+                        # Проверяем наличие ключевых слов опыта
+                        has_skill_experience = any(
+                            word in RESPONSIBILITY_KEYWORDS for word in context
+                        )
+
+                        # Добавляем навык только если нет отрицания и есть опыт
+                        if not has_negation and (
+                            has_experience or has_skill_experience
+                        ):
                             skills[category].add(skill)
+                            # Сохраняем контекст использования
+                            if skill not in skill_context[category]:
+                                skill_context[category][skill] = []
+                            skill_context[category][skill].append(sentence)
                     except ValueError:
                         continue
 
-    return skills
+    # Фильтруем навыки на основе контекста
+    filtered_skills = {category: set() for category in TECH_SKILLS.keys()}
+    for category in TECH_SKILLS.keys():
+        for skill in skills[category]:
+            contexts = skill_context[category][skill]
+            # Проверяем, что навык упоминается в контексте реального использования
+            if any(
+                any(
+                    word in context
+                    for word in [
+                        "разработка",
+                        "development",
+                        "создание",
+                        "creation",
+                        "внедрение",
+                        "implementation",
+                        "опыт",
+                        "experience",
+                    ]
+                )
+                for context in contexts
+            ):
+                filtered_skills[category].add(skill)
+
+    return filtered_skills
 
 
 def extract_responsibilities(text):
