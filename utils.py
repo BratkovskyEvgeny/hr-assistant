@@ -33,13 +33,17 @@ def get_model() -> SentenceTransformer:
         # Проверяем наличие кэшированной модели
         if os.path.exists(CACHE_DIR):
             return SentenceTransformer(
-                "paraphrase-multilingual-MiniLM-L12-v2", cache_folder=CACHE_DIR
+                "paraphrase-multilingual-MiniLM-L12-v2",
+                cache_folder=CACHE_DIR,
+                use_auth_token=True,
             )
 
         # Если кэша нет, создаем директорию и загружаем модель
         os.makedirs(CACHE_DIR, exist_ok=True)
         return SentenceTransformer(
-            "paraphrase-multilingual-MiniLM-L12-v2", cache_folder=CACHE_DIR
+            "paraphrase-multilingual-MiniLM-L12-v2",
+            cache_folder=CACHE_DIR,
+            use_auth_token=True,
         )
     except Exception as e:
         print(f"Ошибка при загрузке модели: {str(e)}")
