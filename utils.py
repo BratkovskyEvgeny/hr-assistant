@@ -7,7 +7,6 @@ from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.metrics.pairwise import cosine_similarity
 
 # Загрузка необходимых ресурсов NLTK
 nltk.download("punkt")
@@ -216,17 +215,20 @@ def extract_skills(text):
 
     # Ищем навыки в контексте предложений
     for sentence in sentences:
+        words = sentence.split()
         for category, skill_set in TECH_SKILLS.items():
             for skill in skill_set:
-                if skill.lower() in sentence:
+                if skill.lower() in words:
                     # Проверяем контекст использования навыка
-                    words = sentence.split()
-                    skill_index = words.index(skill.lower())
-                    context = words[
-                        max(0, skill_index - 3) : min(len(words), skill_index + 4)
-                    ]
-                    if any(word in RESPONSIBILITY_KEYWORDS for word in context):
-                        skills[category].add(skill)
+                    try:
+                        skill_index = words.index(skill.lower())
+                        context = words[
+                            max(0, skill_index - 3) : min(len(words), skill_index + 4)
+                        ]
+                        if any(word in RESPONSIBILITY_KEYWORDS for word in context):
+                            skills[category].add(skill)
+                    except ValueError:
+                        continue
 
     return skills
 
