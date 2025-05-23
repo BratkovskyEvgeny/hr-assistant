@@ -250,6 +250,95 @@ def extract_skills(text):
     # Множество для хранения найденных навыков
     skills = set()
 
+    # Стоп-слова для фильтрации
+    stop_words = {
+        "опыт",
+        "experience",
+        "работа",
+        "work",
+        "разработка",
+        "development",
+        "создание",
+        "creation",
+        "внедрение",
+        "implementation",
+        "использование",
+        "using",
+        "знание",
+        "knowledge",
+        "умение",
+        "ability",
+        "навык",
+        "skill",
+        "требование",
+        "requirement",
+        "обязанность",
+        "responsibility",
+        "задача",
+        "task",
+        "проект",
+        "project",
+        "верим",
+        "делать",
+        "жизнь",
+        "инструмент",
+        "интеллект",
+        "который",
+        "легче",
+        "лучше",
+        "нам",
+        "наш",
+        "помогает",
+        "усиливает",
+        "что",
+        "это",
+        "агентов",
+        "баз",
+        "будут",
+        "вакансии",
+        "валюта",
+        "векторизованных",
+        "владельцев",
+        "внедрить",
+        "выполнять",
+        "достаточно",
+        "драгоценные",
+        "задач",
+        "задачу",
+        "знаний",
+        "конкретного",
+        "которые",
+        "лет",
+        "металлы",
+        "название",
+        "обязательно",
+        "опыта",
+        "организация",
+        "пайплайна",
+        "перед",
+        "полученного",
+        "продуктов",
+        "промышленное",
+        "процесса",
+        "процессе",
+        "работу",
+        "ранжирование",
+        "реализация",
+        "роли",
+        "сильных",
+        "слабых",
+        "собой",
+        "создания",
+        "создать",
+        "ставим",
+        "сторон",
+        "требования",
+        "уровне",
+        "цепочек",
+        "часть",
+        "эффективные",
+    }
+
     # Ищем технологии в тексте
     for sentence in sentences:
         # Разбиваем предложение на слова
@@ -260,25 +349,104 @@ def extract_skills(text):
             # Очищаем слово от специальных символов
             clean_word = re.sub(r"[^\w\s]", "", word)
 
-            # Пропускаем короткие слова и стоп-слова
-            if len(clean_word) < 3 or clean_word in [
-                "the",
-                "and",
-                "for",
-                "with",
-                "using",
-                "use",
-                "used",
-                "опыт",
-                "experience",
-            ]:
+            # Пропускаем короткие слова, стоп-слова и слова с цифрами
+            if (
+                len(clean_word) < 3
+                or clean_word in stop_words
+                or any(c.isdigit() for c in clean_word)
+                or clean_word in ["the", "and", "for", "with", "using", "use", "used"]
+            ):
                 continue
 
             # Проверяем, что слово не является частью фразы
             if not any(
                 clean_word in phrase for phrase in ["опыт работы", "work experience"]
             ):
-                skills.add(clean_word)
+                # Проверяем, что слово похоже на технологию
+                if (
+                    clean_word.endswith(
+                        ("js", "py", "net", "db", "sql", "api", "sdk", "ml", "ai")
+                    )
+                    or clean_word.startswith(
+                        (
+                            "react",
+                            "angular",
+                            "vue",
+                            "node",
+                            "django",
+                            "flask",
+                            "fast",
+                            "spring",
+                            "laravel",
+                        )
+                    )
+                    or clean_word
+                    in [
+                        "python",
+                        "java",
+                        "javascript",
+                        "typescript",
+                        "c++",
+                        "c#",
+                        "php",
+                        "ruby",
+                        "go",
+                        "rust",
+                        "swift",
+                        "kotlin",
+                        "scala",
+                        "r",
+                        "matlab",
+                        "django",
+                        "flask",
+                        "fastapi",
+                        "spring",
+                        "laravel",
+                        "express",
+                        "asp.net",
+                        "rails",
+                        "react",
+                        "angular",
+                        "vue",
+                        "node.js",
+                        "tensorflow",
+                        "pytorch",
+                        "pandas",
+                        "numpy",
+                        "scikit-learn",
+                        "keras",
+                        "spark",
+                        "hadoop",
+                        "langchain",
+                        "chromadb",
+                        "mongodb",
+                        "postgresql",
+                        "mysql",
+                        "oracle",
+                        "redis",
+                        "elasticsearch",
+                        "cassandra",
+                        "neo4j",
+                        "dynamodb",
+                        "docker",
+                        "kubernetes",
+                        "aws",
+                        "azure",
+                        "gcp",
+                        "linux",
+                        "unix",
+                        "git",
+                        "jenkins",
+                        "gitlab",
+                        "jira",
+                        "confluence",
+                        "ansible",
+                        "terraform",
+                        "prometheus",
+                        "grafana",
+                    ]
+                ):
+                    skills.add(clean_word)
 
     return skills
 
