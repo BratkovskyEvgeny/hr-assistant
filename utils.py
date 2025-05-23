@@ -4,7 +4,7 @@ import nltk
 import PyPDF2
 from docx import Document
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import sent_tokenize, word_tokenize
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics.pairwise import cosine_similarity
@@ -12,9 +12,128 @@ from sklearn.metrics.pairwise import cosine_similarity
 # Загрузка необходимых ресурсов NLTK
 nltk.download("punkt")
 nltk.download("stopwords")
+nltk.download("averaged_perceptron_tagger")
 
 # Инициализация модели для многоязычного анализа
 model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+
+# Словари технических навыков
+TECH_SKILLS = {
+    # Языки программирования
+    "languages": {
+        "python",
+        "java",
+        "javascript",
+        "typescript",
+        "c++",
+        "c#",
+        "php",
+        "ruby",
+        "go",
+        "rust",
+        "swift",
+        "kotlin",
+        "scala",
+        "r",
+        "matlab",
+    },
+    # Фреймворки и библиотеки
+    "frameworks": {
+        "django",
+        "flask",
+        "fastapi",
+        "spring",
+        "laravel",
+        "express",
+        "asp.net",
+        "rails",
+        "react",
+        "angular",
+        "vue",
+        "node.js",
+        "tensorflow",
+        "pytorch",
+        "pandas",
+        "numpy",
+        "scikit-learn",
+        "keras",
+        "spark",
+        "hadoop",
+    },
+    # Базы данных
+    "databases": {
+        "sql",
+        "nosql",
+        "mongodb",
+        "postgresql",
+        "mysql",
+        "oracle",
+        "redis",
+        "elasticsearch",
+        "cassandra",
+        "neo4j",
+        "dynamodb",
+    },
+    # DevOps и инструменты
+    "devops": {
+        "docker",
+        "kubernetes",
+        "aws",
+        "azure",
+        "gcp",
+        "linux",
+        "unix",
+        "git",
+        "jenkins",
+        "gitlab",
+        "jira",
+        "confluence",
+        "ansible",
+        "terraform",
+    },
+    # Методологии
+    "methodologies": {"agile", "scrum", "kanban", "waterfall", "devops", "ci/cd"},
+}
+
+# Ключевые слова для определения обязанностей
+RESPONSIBILITY_KEYWORDS = {
+    "разработка",
+    "development",
+    "разработать",
+    "develop",
+    "создание",
+    "creation",
+    "создать",
+    "create",
+    "внедрение",
+    "implementation",
+    "внедрить",
+    "implement",
+    "оптимизация",
+    "optimization",
+    "оптимизировать",
+    "optimize",
+    "поддержка",
+    "maintenance",
+    "поддерживать",
+    "maintain",
+    "тестирование",
+    "testing",
+    "тестировать",
+    "test",
+    "анализ",
+    "analysis",
+    "анализировать",
+    "analyze",
+    "управление",
+    "management",
+    "управлять",
+    "manage",
+    "координация",
+    "coordination",
+    "координировать",
+    "coordinate",
+}
 
 
 def extract_text_from_file(file):
@@ -83,109 +202,94 @@ def calculate_similarity(job_description, resume_text):
 
 
 def extract_skills(text):
-    """Извлекает навыки из текста"""
+    """Извлекает навыки из текста с учетом категорий"""
+    skills = {category: set() for category in TECH_SKILLS.keys()}
+
     # Разбиваем текст на предложения
-    sentences = nltk.sent_tokenize(text)
-
-    # Определяем ключевые слова для навыков
-    skill_keywords = [
-        "опыт",
-        "навыки",
-        "умения",
-        "знания",
-        "технологии",
-        "experience",
-        "skills",
-        "abilities",
-        "knowledge",
-        "technologies",
-    ]
-
-    # Словарь технических навыков
-    tech_skills = {
-        "python",
-        "java",
-        "javascript",
-        "typescript",
-        "c++",
-        "c#",
-        "php",
-        "ruby",
-        "go",
-        "rust",
-        "swift",
-        "kotlin",
-        "scala",
-        "r",
-        "matlab",
-        "html",
-        "css",
-        "react",
-        "angular",
-        "vue",
-        "node.js",
-        "django",
-        "flask",
-        "spring",
-        "laravel",
-        "express",
-        "asp.net",
-        "rails",
-        "docker",
-        "kubernetes",
-        "aws",
-        "azure",
-        "gcp",
-        "linux",
-        "unix",
-        "git",
-        "sql",
-        "nosql",
-        "mongodb",
-        "postgresql",
-        "mysql",
-        "oracle",
-        "redis",
-        "elasticsearch",
-        "kafka",
-        "rabbitmq",
-        "jenkins",
-        "gitlab",
-        "jira",
-        "confluence",
-        "agile",
-        "scrum",
-        "kanban",
-    }
-
-    skills = set()
+    sentences = sent_tokenize(text.lower())
 
     # Ищем технические навыки в тексте
-    for skill in tech_skills:
-        if skill.lower() in text.lower():
-            skills.add(skill)
+    for category, skill_set in TECH_SKILLS.items():
+        for skill in skill_set:
+            if skill.lower() in text.lower():
+                skills[category].add(skill)
 
-    # Ищем предложения, содержащие ключевые слова
+    # Ищем навыки в контексте предложений
     for sentence in sentences:
-        if any(keyword in sentence.lower() for keyword in skill_keywords):
-            # Извлекаем слова, которые могут быть навыками
-            words = sentence.lower().split()
-            for word in words:
-                if len(word) > 3 and word.isalpha():
-                    skills.add(word)
+        for category, skill_set in TECH_SKILLS.items():
+            for skill in skill_set:
+                if skill.lower() in sentence:
+                    # Проверяем контекст использования навыка
+                    words = sentence.split()
+                    skill_index = words.index(skill.lower())
+                    context = words[
+                        max(0, skill_index - 3) : min(len(words), skill_index + 4)
+                    ]
+                    if any(word in RESPONSIBILITY_KEYWORDS for word in context):
+                        skills[category].add(skill)
 
     return skills
 
 
+def extract_responsibilities(text):
+    """Извлекает обязанности из текста"""
+    responsibilities = []
+    sentences = sent_tokenize(text.lower())
+
+    for sentence in sentences:
+        # Проверяем, содержит ли предложение ключевые слова обязанностей
+        if any(keyword in sentence for keyword in RESPONSIBILITY_KEYWORDS):
+            # Получаем эмбеддинг предложения
+            sentence_embedding = model.encode(sentence)
+
+            # Проверяем, не является ли это дубликатом
+            is_duplicate = False
+            for existing_resp in responsibilities:
+                existing_embedding = model.encode(existing_resp)
+                similarity = cosine_similarity(
+                    sentence_embedding.reshape(1, -1), existing_embedding.reshape(1, -1)
+                )[0][0]
+                if similarity > 0.8:  # Порог схожести
+                    is_duplicate = True
+                    break
+
+            if not is_duplicate:
+                responsibilities.append(sentence)
+
+    return responsibilities
+
+
 def analyze_skills(job_description, resume_text):
-    """Анализирует отсутствующие навыки"""
+    """Анализирует отсутствующие навыки и опыт"""
+    # Извлекаем навыки из описания вакансии и резюме
     job_skills = extract_skills(job_description)
     resume_skills = extract_skills(resume_text)
 
-    # Находим отсутствующие навыки
-    missing_skills = job_skills - resume_skills
+    # Извлекаем обязанности
+    job_responsibilities = extract_responsibilities(job_description)
+    resume_responsibilities = extract_responsibilities(resume_text)
 
-    return list(missing_skills)
+    # Анализируем отсутствующие навыки по категориям
+    missing_skills = {category: set() for category in TECH_SKILLS.keys()}
+    for category in TECH_SKILLS.keys():
+        missing_skills[category] = job_skills[category] - resume_skills[category]
+
+    # Анализируем отсутствующий опыт
+    missing_experience = []
+    for job_resp in job_responsibilities:
+        job_resp_embedding = model.encode(job_resp)
+        max_similarity = 0
+        for resume_resp in resume_responsibilities:
+            resume_resp_embedding = model.encode(resume_resp)
+            similarity = cosine_similarity(
+                job_resp_embedding.reshape(1, -1), resume_resp_embedding.reshape(1, -1)
+            )[0][0]
+            max_similarity = max(max_similarity, similarity)
+
+        if max_similarity < 0.5:  # Порог схожести
+            missing_experience.append(job_resp)
+
+    return {"missing_skills": missing_skills, "missing_experience": missing_experience}
 
 
 def get_detailed_analysis(job_description, resume_text):

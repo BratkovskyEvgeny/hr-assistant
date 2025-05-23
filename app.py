@@ -6,12 +6,6 @@ from utils import (
     extract_text_from_file,
     get_detailed_analysis,
 )
-from utils import (
-    analyze_skills,
-    calculate_similarity,
-    extract_text_from_file,
-    get_detailed_analysis,
-)
 
 st.set_page_config(
     page_title="HR Assistant - Оценка резюме", page_icon="📝", layout="wide"
@@ -39,7 +33,7 @@ if uploaded_file is not None and job_description:
 
     # Анализируем соответствие
     similarity_score = calculate_similarity(job_description, resume_text)
-    missing_skills = analyze_skills(job_description, resume_text)
+    analysis_results = analyze_skills(job_description, resume_text)
     detailed_analysis = get_detailed_analysis(job_description, resume_text)
 
     # Отображаем результаты
@@ -52,15 +46,31 @@ if uploaded_file is not None and job_description:
         st.metric("Процент соответствия", f"{similarity_score:.1f}%")
 
     with col2:
-        if missing_skills:
-            st.warning("Отсутствующие навыки:")
-            for skill in missing_skills:
-                st.write(f"- {skill}")
+        if (
+            any(analysis_results["missing_skills"].values())
+            or analysis_results["missing_experience"]
+        ):
+            st.warning("Обнаружены несоответствия")
         else:
-            st.success("Все необходимые навыки присутствуют!")
+            st.success("Все требования соответствуют!")
+
+    # Отображаем отсутствующие навыки по категориям
+    st.subheader("🔍 Отсутствующие навыки")
+
+    for category, skills in analysis_results["missing_skills"].items():
+        if skills:
+            with st.expander(f"📚 {category.capitalize()}"):
+                for skill in sorted(skills):
+                    st.write(f"- {skill}")
+
+    # Отображаем отсутствующий опыт
+    if analysis_results["missing_experience"]:
+        st.subheader("⚠️ Отсутствующий опыт")
+        for exp in analysis_results["missing_experience"]:
+            st.write(f"- {exp}")
 
     # Отображаем детальный анализ
-    st.header("🔍 Детальный анализ")
+    st.header("📑 Детальный анализ")
 
     # Создаем вкладки для разных секций
     tabs = st.tabs(["Опыт работы", "Образование", "Навыки", "Проекты"])
