@@ -359,11 +359,24 @@ if uploaded_file is not None and job_description:
                 for exp in missing_experience:
                     st.write(f"- {exp}")
 
-        # Отображаем отладочную информацию о найденных заголовках
+        # Выводим весь текст резюме для диагностики
+        st.markdown("#### 📝 Весь текст резюме (отладка)")
+        st.text_area("Весь текст резюме", resume_text, height=200, disabled=True)
+
+        # Отображаем отладочную информацию о найденных заголовках и тексте между ними
         debug_headers = analysis_results.get("_debug_headers", [])
         if debug_headers:
             st.markdown("#### 🐞 Найденные заголовки и их позиции (отладка)")
-            for h in debug_headers:
-                st.write(
-                    f"Секция: {h['section']}, Заголовок: '{h['keyword']}', Позиция: {h['start']}-{h['end']}"
+            for i, h in enumerate(debug_headers):
+                section = h["section"]
+                start = h["end"]
+                end = (
+                    debug_headers[i + 1]["start"]
+                    if i + 1 < len(debug_headers)
+                    else len(resume_text)
                 )
+                section_text = resume_text[start:end].strip()
+                st.write(
+                    f"Секция: {section}, Заголовок: '{h['keyword']}', Позиция: {h['start']}-{h['end']}"
+                )
+                st.write(f"Текст секции (первые 100 символов): {section_text[:100]}")
