@@ -54,109 +54,11 @@ if uploaded_file is not None and job_description:
     # Отображаем отсутствующие навыки
     if analysis_results["missing_skills"]:
         st.subheader("🔍 Отсутствующие навыки")
-        # Группируем навыки по категориям
-        categories = {
-            "Языки программирования": [
-                "python",
-                "java",
-                "javascript",
-                "typescript",
-                "c++",
-                "c#",
-                "php",
-                "ruby",
-                "go",
-                "rust",
-                "swift",
-                "kotlin",
-                "scala",
-                "r",
-                "matlab",
-            ],
-            "Фреймворки и библиотеки": [
-                "django",
-                "flask",
-                "fastapi",
-                "spring",
-                "laravel",
-                "express",
-                "asp.net",
-                "rails",
-                "react",
-                "angular",
-                "vue",
-                "node.js",
-                "tensorflow",
-                "pytorch",
-                "pandas",
-                "numpy",
-                "scikit-learn",
-                "keras",
-                "spark",
-                "hadoop",
-                "langchain",
-                "chromadb",
-                "transformers",
-                "huggingface",
-                "streamlit",
-                "gradio",
-            ],
-            "Базы данных": [
-                "sql",
-                "nosql",
-                "mongodb",
-                "postgresql",
-                "mysql",
-                "oracle",
-                "redis",
-                "elasticsearch",
-                "cassandra",
-                "neo4j",
-                "dynamodb",
-                "pinecone",
-                "weaviate",
-                "qdrant",
-            ],
-            "DevOps и инструменты": [
-                "docker",
-                "kubernetes",
-                "aws",
-                "azure",
-                "gcp",
-                "linux",
-                "unix",
-                "git",
-                "jenkins",
-                "gitlab",
-                "jira",
-                "confluence",
-                "ansible",
-                "terraform",
-                "prometheus",
-                "grafana",
-            ],
-            "Другое": [],
-        }
-
-        # Распределяем навыки по категориям
-        categorized_skills = {category: [] for category in categories}
-        for skill in sorted(analysis_results["missing_skills"]):
-            skill_lower = skill.lower()
-            categorized = False
-            for category, keywords in categories.items():
-                if any(keyword in skill_lower for keyword in keywords):
-                    categorized_skills[category].append(skill)
-                    categorized = True
-                    break
-            if not categorized:
-                categorized_skills["Другое"].append(skill)
-
-        # Отображаем навыки по категориям
-        for category, skills in categorized_skills.items():
-            if skills:
-                with st.expander(f"📚 {category}"):
-                    for skill in sorted(skills):
-                        st.write(f"- {skill}")
+        # Сортируем навыки для лучшей читаемости
+        missing_skills = sorted(analysis_results["missing_skills"])
+        # Отображаем навыки в виде списка
+        for skill in missing_skills:
+            st.write(f"- {skill}")
 
     # Отображаем отсутствующий опыт
     if analysis_results["missing_experience"]:

@@ -244,117 +244,41 @@ def calculate_similarity(job_description, resume_text):
 
 def extract_skills(text):
     """Извлекает навыки из текста"""
-    skills = set()
-
     # Разбиваем текст на предложения
     sentences = sent_tokenize(text.lower())
 
-    # Ключевые слова для определения технических навыков
-    tech_keywords = {
-        "язык",
-        "language",
-        "framework",
-        "фреймворк",
-        "библиотека",
-        "library",
-        "база данных",
-        "database",
-        "инструмент",
-        "tool",
-        "технология",
-        "technology",
-        "платформа",
-        "platform",
-        "api",
-        "sdk",
-        "middleware",
-        "middleware",
-    }
+    # Множество для хранения найденных навыков
+    skills = set()
 
-    # Стоп-слова для фильтрации
-    stop_words = {
-        "опыт",
-        "experience",
-        "работа",
-        "work",
-        "разработка",
-        "development",
-        "создание",
-        "creation",
-        "внедрение",
-        "implementation",
-        "использование",
-        "using",
-        "знание",
-        "knowledge",
-        "умение",
-        "ability",
-        "навык",
-        "skill",
-        "требование",
-        "requirement",
-        "обязанность",
-        "responsibility",
-        "задача",
-        "task",
-        "проект",
-        "project",
-    }
-
-    # Ищем технические навыки в тексте
+    # Ищем технологии в тексте
     for sentence in sentences:
+        # Разбиваем предложение на слова
         words = sentence.split()
 
-        # Проверяем, содержит ли предложение ключевые слова технических навыков
-        has_tech_keyword = any(keyword in sentence for keyword in tech_keywords)
+        # Проверяем каждое слово
+        for word in words:
+            # Очищаем слово от специальных символов
+            clean_word = re.sub(r"[^\w\s]", "", word)
 
-        if has_tech_keyword:
-            for i, word in enumerate(words):
-                # Пропускаем короткие слова, стоп-слова и слова с цифрами
-                if (
-                    len(word) < 3
-                    or word in stop_words
-                    or any(c.isdigit() for c in word)
-                    or word in ["the", "and", "for", "with", "using", "use", "used"]
-                ):
-                    continue
+            # Пропускаем короткие слова и стоп-слова
+            if len(clean_word) < 3 or clean_word in [
+                "the",
+                "and",
+                "for",
+                "with",
+                "using",
+                "use",
+                "used",
+                "опыт",
+                "experience",
+            ]:
+                continue
 
-                # Проверяем контекст вокруг слова
-                context = words[max(0, i - 3) : min(len(words), i + 4)]
-
-                # Проверяем наличие отрицаний
-                has_negation = any(
-                    neg in context[:i]
-                    for neg in [
-                        "нет",
-                        "не",
-                        "без",
-                        "no",
-                        "not",
-                        "without",
-                        "хочу",
-                        "want",
-                        "желательно",
-                        "preferred",
-                    ]
-                )
-
-                # Проверяем, что слово не является частью фразы
-                is_part_of_phrase = any(
-                    word in phrase
-                    for phrase in [
-                        "опыт работы",
-                        "work experience",
-                        "база данных",
-                        "database",
-                    ]
-                )
-
-                if not has_negation and not is_part_of_phrase:
-                    # Очищаем слово от специальных символов
-                    clean_word = re.sub(r"[^\w\s]", "", word)
-                    if clean_word:
-                        skills.add(clean_word)
+            # Проверяем, что слово не является частью фразы
+            if not any(
+                clean_word in phrase for phrase in ["опыт работы", "work experience"]
+            ):
+                skills.add(clean_word)
 
     return skills
 
