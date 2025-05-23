@@ -298,12 +298,16 @@ if uploaded_file is not None and job_description:
                 exp_data = analysis_results["experience"]
                 st.subheader("Опыт работы")
                 st.write(f"**Соответствие:** {exp_data['relevance']:.1f}%")
-
+                if exp_data["text"].strip():
+                    st.text_area(
+                        "Текст секции", exp_data["text"], height=120, disabled=True
+                    )
+                else:
+                    st.warning("Секция 'Опыт работы' не найдена или пуста.")
                 if exp_data["responsibilities"]:
                     st.write("**Обязанности:**")
                     for resp in exp_data["responsibilities"]:
                         st.write(f"- {resp}")
-
                 if exp_data["skills"]:
                     st.write("**Приобретенные навыки:**")
                     for skill in exp_data["skills"]:
@@ -314,11 +318,12 @@ if uploaded_file is not None and job_description:
                 edu_data = analysis_results["education"]
                 st.subheader("Образование")
                 st.write(f"**Соответствие:** {edu_data['relevance']:.1f}%")
-
-                if edu_data["text"]:
-                    st.write("**Детали образования:**")
-                    st.write(edu_data["text"])
-
+                if edu_data["text"].strip():
+                    st.text_area(
+                        "Текст секции", edu_data["text"], height=120, disabled=True
+                    )
+                else:
+                    st.warning("Секция 'Образование' не найдена или пуста.")
                 if edu_data["skills"]:
                     st.write("**Приобретенные навыки:**")
                     for skill in edu_data["skills"]:
@@ -329,7 +334,12 @@ if uploaded_file is not None and job_description:
                 skills_data = analysis_results["skills"]
                 st.subheader("Навыки")
                 st.write(f"**Соответствие:** {skills_data['relevance']:.1f}%")
-
+                if skills_data["text"].strip():
+                    st.text_area(
+                        "Текст секции", skills_data["text"], height=120, disabled=True
+                    )
+                else:
+                    st.warning("Секция 'Навыки' не найдена или пуста.")
                 if skills_data["skills"]:
                     st.write("**Технические навыки:**")
                     for skill in skills_data["skills"]:
@@ -348,3 +358,12 @@ if uploaded_file is not None and job_description:
                 st.write("**Отсутствующий опыт:**")
                 for exp in missing_experience:
                     st.write(f"- {exp}")
+
+        # Отображаем отладочную информацию о найденных заголовках
+        debug_headers = analysis_results.get("_debug_headers", [])
+        if debug_headers:
+            st.markdown("#### 🐞 Найденные заголовки и их позиции (отладка)")
+            for h in debug_headers:
+                st.write(
+                    f"Секция: {h['section']}, Заголовок: '{h['keyword']}', Позиция: {h['start']}-{h['end']}"
+                )

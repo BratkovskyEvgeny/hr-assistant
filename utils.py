@@ -285,14 +285,10 @@ def calculate_similarity(text1: str, text2: str) -> float:
 
 
 def extract_skills(text):
-    """Извлекает навыки из текста"""
+    """Извлекает навыки из текста (поиск по подстроке, регистронезависимо)"""
     # Разбиваем текст на предложения
     sentences = sent_tokenize(text.lower())
-
-    # Множество для хранения найденных навыков
     skills = set()
-
-    # Стоп-слова для фильтрации
     stop_words = {
         "опыт",
         "experience",
@@ -380,116 +376,14 @@ def extract_skills(text):
         "часть",
         "эффективные",
     }
-
-    # Ищем технологии в тексте
+    # Собираем все ключевые слова из TECH_SKILLS в один плоский список
+    all_tech_keywords = set()
+    for group in TECH_SKILLS.values():
+        all_tech_keywords.update([kw.lower() for kw in group])
     for sentence in sentences:
-        # Разбиваем предложение на слова
-        words = sentence.split()
-
-        # Проверяем каждое слово
-        for word in words:
-            # Очищаем слово от специальных символов
-            clean_word = re.sub(r"[^\w\s]", "", word)
-
-            # Пропускаем короткие слова, стоп-слова и слова с цифрами
-            if (
-                len(clean_word) < 3
-                or clean_word in stop_words
-                or any(c.isdigit() for c in clean_word)
-                or clean_word in ["the", "and", "for", "with", "using", "use", "used"]
-            ):
-                continue
-
-            # Проверяем, что слово не является частью фразы
-            if not any(
-                clean_word in phrase for phrase in ["опыт работы", "work experience"]
-            ):
-                # Проверяем, что слово похоже на технологию
-                if (
-                    clean_word.endswith(
-                        ("js", "py", "net", "db", "sql", "api", "sdk", "ml", "ai")
-                    )
-                    or clean_word.startswith(
-                        (
-                            "react",
-                            "angular",
-                            "vue",
-                            "node",
-                            "django",
-                            "flask",
-                            "fast",
-                            "spring",
-                            "laravel",
-                        )
-                    )
-                    or clean_word
-                    in [
-                        "python",
-                        "java",
-                        "javascript",
-                        "typescript",
-                        "c++",
-                        "c#",
-                        "php",
-                        "ruby",
-                        "go",
-                        "rust",
-                        "swift",
-                        "kotlin",
-                        "scala",
-                        "r",
-                        "matlab",
-                        "django",
-                        "flask",
-                        "fastapi",
-                        "spring",
-                        "laravel",
-                        "express",
-                        "asp.net",
-                        "rails",
-                        "react",
-                        "angular",
-                        "vue",
-                        "node.js",
-                        "tensorflow",
-                        "pytorch",
-                        "pandas",
-                        "numpy",
-                        "scikit-learn",
-                        "keras",
-                        "spark",
-                        "hadoop",
-                        "langchain",
-                        "chromadb",
-                        "mongodb",
-                        "postgresql",
-                        "mysql",
-                        "oracle",
-                        "redis",
-                        "elasticsearch",
-                        "cassandra",
-                        "neo4j",
-                        "dynamodb",
-                        "docker",
-                        "kubernetes",
-                        "aws",
-                        "azure",
-                        "gcp",
-                        "linux",
-                        "unix",
-                        "git",
-                        "jenkins",
-                        "gitlab",
-                        "jira",
-                        "confluence",
-                        "ansible",
-                        "terraform",
-                        "prometheus",
-                        "grafana",
-                    ]
-                ):
-                    skills.add(clean_word)
-
+        for tech in all_tech_keywords:
+            if tech in sentence and tech not in stop_words:
+                skills.add(tech)
     return skills
 
 
@@ -580,8 +474,8 @@ def analyze_skills(job_description, resume_text):
 
 
 def get_detailed_analysis(job_description, resume_text):
-    """Получает детальный анализ резюме"""
-    # Расширенные ключевые слова для поиска секций (регистронезависимо)
+    """Получает детальный анализ резюме и возвращает найденные заголовки для отладки"""
+    # Ключевые слова для поиска секций (регистронезависимо)
     sections = {
         "experience": ["опыт работы", "experience", "work experience"],
         "education": ["образование", "education"],
@@ -596,54 +490,57 @@ def get_detailed_analysis(job_description, resume_text):
 
     analysis = {}
     model = get_model()
-
     if model is None:
         print("Ошибка: модель не была загружена")
         return analysis
 
+    resume_text_lower = resume_text.lower()
+    # Собираем все заголовки и их позиции
+    found_headers = []
+    for section, keywords in sections.items():
+        for keyword in keywords:
+            for match in re.finditer(re.escape(keyword.lower()), resume_text_lower):
+                found_headers.append(
+                    {
+                        "section": section,
+                        "keyword": keyword,
+                        "start": match.start(),
+                        "end": match.end(),
+                    }
+                )
+    # Сортируем по позиции
+    found_headers = sorted(found_headers, key=lambda x: x["start"])
+
+    # Извлекаем текст между заголовками
+    section_texts = {k: "" for k in sections.keys()}
+    for i, header in enumerate(found_headers):
+        section = header["section"]
+        start = header["end"]
+        end = (
+            found_headers[i + 1]["start"]
+            if i + 1 < len(found_headers)
+            else len(resume_text)
+        )
+        section_texts[section] += resume_text[start:end].strip() + "\n"
+
+    # Анализируем каждую секцию
     try:
-        # Получаем эмбеддинги для всего текста
         job_embedding = model.encode(job_description)
-        resume_text_lower = resume_text.lower()
-
-        # Анализируем каждую секцию
-        for section, keywords in sections.items():
-            section_text = ""
-            for keyword in keywords:
-                keyword_lower = keyword.lower()
-                if keyword_lower in resume_text_lower:
-                    idx = resume_text_lower.find(keyword_lower)
-                    next_section_idx = len(resume_text)
-                    for other_keyword in [k for k in keywords if k != keyword]:
-                        other_idx = resume_text_lower.find(
-                            other_keyword.lower(), idx + len(keyword_lower)
-                        )
-                        if other_idx != -1:
-                            next_section_idx = min(next_section_idx, other_idx)
-                    section_text += resume_text[idx:next_section_idx].strip() + "\n"
-
-            if section_text:
-                try:
-                    section_embedding = model.encode(section_text)
-                    similarity = cosine_similarity(
-                        section_embedding.reshape(1, -1), job_embedding.reshape(1, -1)
-                    )[0][0]
-                    section_skills = extract_skills(section_text)
-                    section_responsibilities = extract_responsibilities(section_text)
-                    analysis[section] = {
-                        "text": section_text,
-                        "relevance": float(similarity * 100),
-                        "skills": list(section_skills),
-                        "responsibilities": section_responsibilities,
-                    }
-                except Exception as e:
-                    print(f"Ошибка при анализе секции {section}: {str(e)}")
-                    analysis[section] = {
-                        "text": section_text,
-                        "relevance": 0.0,
-                        "skills": [],
-                        "responsibilities": [],
-                    }
+        for section in sections.keys():
+            section_text = section_texts[section]
+            if section_text.strip():
+                section_embedding = model.encode(section_text)
+                similarity = cosine_similarity(
+                    section_embedding.reshape(1, -1), job_embedding.reshape(1, -1)
+                )[0][0]
+                section_skills = extract_skills(section_text)
+                section_responsibilities = extract_responsibilities(section_text)
+                analysis[section] = {
+                    "text": section_text,
+                    "relevance": float(similarity * 100),
+                    "skills": list(section_skills),
+                    "responsibilities": section_responsibilities,
+                }
             else:
                 analysis[section] = {
                     "text": "",
@@ -651,13 +548,14 @@ def get_detailed_analysis(job_description, resume_text):
                     "skills": [],
                     "responsibilities": [],
                 }
-        # Рассчитываем общий процент соответствия
+        # Общий процент соответствия
         if analysis:
             total_relevance = sum(section["relevance"] for section in analysis.values())
             average_relevance = total_relevance / len(analysis)
             analysis["overall_match"] = float(average_relevance)
+        # Для отладки: возвращаем найденные заголовки
+        analysis["_debug_headers"] = found_headers
     except Exception as e:
         print(f"Ошибка при детальном анализе: {str(e)}")
         return analysis
-
     return analysis
